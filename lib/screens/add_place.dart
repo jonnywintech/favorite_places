@@ -1,19 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/providers/user_places.dart';
 
-class AddPlace extends StatefulWidget {
-  const AddPlace({super.key});
+class AddPlaceScreen extends ConsumerStatefulWidget {
+  const AddPlaceScreen({super.key});
 
   @override
-  State<AddPlace> createState() {
-    return _AddPlaceState();
+  ConsumerState<AddPlaceScreen> createState() {
+    return _AddPlaceScreenState();
   }
 }
 
-class _AddPlaceState extends State<AddPlace> {
-  final _formKey = GlobalKey<FormState>();
+class _AddPlaceScreenState extends ConsumerState<AddPlaceScreen> {
   final _titleController = TextEditingController();
+
+  void _savePlace() {
+    final enteredTitle = _titleController.text;
+
+    if (enteredTitle.isEmpty) {
+      return;
+    }
+
+    ref.read(userPlacesProvider.notifier).addPlace(enteredTitle);
+
+    Navigator.of(context).pop();
+  }
 
   @override
   void dispose() {
@@ -21,51 +33,30 @@ class _AddPlaceState extends State<AddPlace> {
     super.dispose();
   }
 
-  void _savePlace() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    final place = Place(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: _titleController.text.trim(),
-    );
-
-    Navigator.of(context).pop(place);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Place'),
+        title: const Text('Add new Place'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                maxLength: 50,
-                decoration: const InputDecoration(labelText: 'Title'),
-                style: TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a title.';
-                  }
-                  return null;
-                },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(labelText: 'Title'),
+              controller: _titleController,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onBackground,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _savePlace,
-                icon: const Icon(Icons.add),
-                label: const Text('Add Place'),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _savePlace,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Place'),
+            ),
+          ],
         ),
       ),
     );
