@@ -3,6 +3,9 @@ import 'package:favorite_places/models/place.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String googleMapsApiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 
 class LocationInput extends StatefulWidget {
   const LocationInput({super.key});
@@ -18,7 +21,7 @@ class _LocationInputState extends State<LocationInput> {
   String get locationImage {
     final lat = _pickedLocation?.latitude;
     final lng = _pickedLocation?.longitude;
-    return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng=&zoom=16&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:A%7C$lat,$lng&markers=color:green%7Clabel:G%7C40.711614,-74.012318&key=YOUR_KEY';
+    return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng=&zoom=16&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:A%7C$lat,$lng&markers=color:green%7Clabel:G%7C40.711614,-74.012318&key=$googleMapsApiKey';
   }
 
   void _getCurrentLocation() async {
