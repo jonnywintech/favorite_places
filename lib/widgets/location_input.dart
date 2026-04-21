@@ -56,18 +56,40 @@ class _LocationInputState extends State<LocationInput> {
     final lng = locationData.longitude;
 
     if (lat == null || lng == null) {
+      setState(() {
+        _isGettingLocation = false;
+      });
       return;
     }
 
     final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=YOUR_KEY',
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=$googleMapsApiKey',
     );
     final response = await http.get(url);
     final resData = jsonDecode(response.body);
 
-    print(resData);
+    // debugPrint('Geocode response status: ${resData['status']}');
 
-    final address = resData['results'][0]['formatted_address'];
+    final results = resData['results'] as List<dynamic>?;
+    if (results == null || results.isEmpty) {
+      setState(() {
+        _isGettingLocation = false;
+      });
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            resData['error_message']?.toString() ??
+                'Could not fetch address for current location.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final address = results[0]['formatted_address'];
 
     setState(() {
       _pickedLocation = PlaceLocation(
@@ -78,9 +100,6 @@ class _LocationInputState extends State<LocationInput> {
       );
       _isGettingLocation = false;
     });
-
-    print(locationData.latitude);
-    print(locationData.longitude);
   }
 
   @override
@@ -95,6 +114,15 @@ class _LocationInputState extends State<LocationInput> {
 
     if (_isGettingLocation) {
       previewContent = CircularProgressIndicator();
+    }
+
+    if (_pickedLocation != null) {
+      previewContent = Image.network(
+        locationImage,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
     }
 
     return Column(
