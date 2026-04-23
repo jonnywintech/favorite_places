@@ -98,7 +98,6 @@ class _LocationInputState extends State<LocationInput> {
         latitude: lat!,
         longitude: lng!,
         address: address,
-        location: null,
       );
       _isGettingLocation = false;
     });
